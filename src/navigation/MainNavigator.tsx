@@ -2,10 +2,20 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import HomeMapScreen from "../screens/HomeMapScreen";
+import HistoryScreen from "../screens/HistoryScreen";
+import AlertsScreen from "../screens/AlertsScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+
 import { MainTabParamList } from "./types";
 
-const Stack = createNativeStackNavigator();
+// 👉 Stack tipado correctamente
+type MainStackParamList = {
+  MainTabs: undefined;
+};
+
+const Stack = createNativeStackNavigator<MainStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function MainTabsNavigator() {
@@ -27,11 +37,7 @@ function MainTabsNavigator() {
           fontSize: 12,
           fontWeight: "600",
           color: "#FFFFFF",
-          marginTop: 8,
-        },
-        tabBarIconStyle: {
-          width: 32,
-          height: 32,
+          marginTop: 4,
         },
       }}
     >
@@ -41,37 +47,40 @@ function MainTabsNavigator() {
         options={{
           tabBarLabel: "Inicio",
           tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="home" size={size} color="#000000" />
+            <MaterialCommunityIcons name="home" size={size} color="#FFFFFF" />
           ),
         }}
       />
+
       <Tab.Screen
         name="History"
-        component={HomeMapScreen}
+        component={HistoryScreen}
         options={{
           tabBarLabel: "Historial",
           tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="history" size={size} color="#000000" />
+            <MaterialCommunityIcons name="history" size={size} color="#FFFFFF" />
           ),
         }}
       />
+
       <Tab.Screen
         name="Alerts"
-        component={HomeMapScreen}
+        component={AlertsScreen}
         options={{
           tabBarLabel: "Alertas",
           tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="bell" size={size} color="#000000" />
+            <MaterialCommunityIcons name="bell" size={size} color="#FFFFFF" />
           ),
         }}
       />
+
       <Tab.Screen
         name="Settings"
-        component={HomeMapScreen}
+        component={SettingsScreen}
         options={{
           tabBarLabel: "Configuración",
           tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="cog" size={size} color="#000000" />
+            <MaterialCommunityIcons name="cog" size={size} color="#FFFFFF" />
           ),
         }}
       />
@@ -81,11 +90,7 @@ function MainTabsNavigator() {
 
 export function MainNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
     </Stack.Navigator>
   );

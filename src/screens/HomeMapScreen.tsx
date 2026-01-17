@@ -161,10 +161,10 @@ export default function HomeMapScreen() {
         </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.icon}>🔔</Text>
+            <Text style={styles.icon}></Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.icon}>⋮</Text>
+            <Text style={styles.icon}></Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -266,7 +266,7 @@ export default function HomeMapScreen() {
                 <Switch
                   value={notificationsEnabled}
                   onValueChange={setNotificationsEnabled}
-                  trackColor={{ false: "#E0E0E0", true: "#00B894" }}
+                  trackColor={{ false: "#E0E0E0", true: "#00b894ff" }}
                   thumbColor="#FFF"
                 />
               </View>
