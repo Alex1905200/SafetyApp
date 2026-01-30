@@ -5,21 +5,19 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import HomeMapScreen from "../screens/HomeMapScreen";
 import HistoryScreen from "../screens/HistoryScreen";
-import AlertsScreen from "../screens/AlertsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { colors } from "../styles/colors";
 
 import { MainTabParamList } from "./types";
 
-// 👉 Stack tipado correctamente
 type MainStackParamList = {
-  MainTabs: undefined;
+  ChildMainTabs: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function MainTabsNavigator() {
+function ChildMainTabsNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -65,17 +63,6 @@ function MainTabsNavigator() {
       />
 
       <Tab.Screen
-        name="Alerts"
-        component={AlertsScreen}
-        options={{
-          tabBarLabel: "Alertas",
-          tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="bell" size={size} color="#FFFFFF" />
-          ),
-        }}
-      />
-
-      <Tab.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
@@ -89,10 +76,10 @@ function MainTabsNavigator() {
   );
 }
 
-export function MainNavigator() {
+export function ChildMainNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+      <Stack.Screen name="ChildMainTabs" component={ChildMainTabsNavigator} />
     </Stack.Navigator>
   );
 }

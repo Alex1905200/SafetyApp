@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SafetyApp",
-    "slug": "SafetyApp",
+    "name": "KidSecure",
+    "slug": "KidSecure",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,7 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.SafetyApp"
+      "package": "com.anonymous.KidSecure"
     },
     "web": {
       "favicon": "./assets/favicon.png"

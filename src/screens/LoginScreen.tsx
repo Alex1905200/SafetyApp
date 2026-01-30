@@ -26,6 +26,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -50,10 +51,21 @@ export default function LoginScreen() {
 
       if (error) {
         console.error("Error de login:", error);
-        Alert.alert(
-          "Error de autenticación",
-          "Correo o contraseña incorrectos. Por favor intenta de nuevo.",
-        );
+        
+        const errorMessage = (error as any)?.message || "";
+        
+        // Verificar si es error de red
+        if (errorMessage.includes("Network") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch")) {
+          Alert.alert(
+            "Error de Conexión",
+            "No se puede conectar con el servidor de Supabase. Por favor:\n\n1. Verifica tu conexión a internet\n2. Comprueba que las variables de entorno estén configuradas\n3. Verifica la URL y clave de Supabase en .env\n\nSi necesitas ayuda, consulta .env.example",
+          );
+        } else {
+          Alert.alert(
+            "Error de autenticación",
+            "Correo o contraseña incorrectos. Por favor intenta de nuevo.",
+          );
+        }
         setLoading(false);
         return;
       }
@@ -100,11 +112,11 @@ export default function LoginScreen() {
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Image
-            source={require("../../assets/logo.png")}
+            source={require("../../assets/Logo.png")}
             style={styles.logoImage}
             resizeMode="contain"
           />
-          <Text style={styles.appTitle}>Safety App</Text>
+          <Text style={styles.appTitle}>KidSecure</Text>
         </View>
 
         <TextInput
@@ -119,15 +131,33 @@ export default function LoginScreen() {
           editable={!loading}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor="#999"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Contraseña"
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            editable={!loading}
+            autoComplete="off"
+            autoCorrect={false}
+            autoCapitalize="none"
+            textContentType="none"
+            importantForAutofill="no"
+            keyboardType="default"
+            spellCheck={false}
+          />
+          <TouchableOpacity
+            style={styles.passwordToggle}
+            onPress={() => setShowPassword(!showPassword)}
+            disabled={loading}
+          >
+            <Text style={styles.passwordToggleIcon}>
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
           <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>

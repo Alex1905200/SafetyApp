@@ -17,8 +17,8 @@ export const loginScreenStyles = StyleSheet.create({
     marginBottom: spacing.huge,
   },
   logoImage: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
     marginBottom: spacing.lg,
   },
   logoHeart: {
@@ -52,6 +52,29 @@ export const loginScreenStyles = StyleSheet.create({
     fontSize: fontSize.lg,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.lg,
+  },
+  passwordInput: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    fontSize: fontSize.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  passwordToggle: {
+    position: "absolute",
+    right: spacing.lg,
+    padding: spacing.md,
+  },
+  passwordToggleIcon: {
+    fontSize: 20,
   },
   forgotPassword: {
     color: colors.primary,

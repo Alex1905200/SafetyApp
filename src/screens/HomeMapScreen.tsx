@@ -14,6 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { authService } from "../services/authService";
 import { homeMapScreenStyles as styles } from "../styles/homeMapScreenStyles";
+import { colors } from "../styles/colors";
 
 interface LocationData {
   latitude: number;
@@ -27,6 +28,8 @@ export default function HomeMapScreen() {
   );
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [userName, setUserName] = useState("Usuario");
+  const [userAge, setUserAge] = useState<number | null>(null);
+  const [userType, setUserType] = useState<"parent" | "child" | null>(null);
 
   // Para el mapa colapsable
   const mapHeightAnim = useRef(new Animated.Value(250)).current;
@@ -35,36 +38,47 @@ export default function HomeMapScreen() {
 
   useEffect(() => {
     requestLocationPermission();
-    loadUserName();
+    loadUserData();
   }, []);
 
-  const loadUserName = async () => {
+  const loadUserData = async () => {
     try {
       const { user } = await authService.getCurrentUser();
       if (user) {
-        // Primero intentar obtener del metadata
+        // Obtener tipo de usuario y perfil
+        const { data: profileData } = await authService.getProfile(user.id);
+        const profile = profileData as any;
+        
+        if (profile?.user_type) {
+          setUserType(profile.user_type);
+        }
+
+        // Cargar nombre
         const metadata = user.user_metadata as any;
         if (metadata?.name && metadata.name.trim().length > 0) {
           setUserName(metadata.name);
-          console.log("Nombre desde metadata:", metadata.name);
-          return;
+        } else if (profile?.name && profile.name.trim().length > 0) {
+          setUserName(profile.name);
+        } else {
+          setUserName(user.email?.split("@")[0] || "Usuario");
         }
 
-        // Si no está en metadata, buscar en el perfil
-        const { data } = await authService.getProfile(user.id);
-        const profileData = data as any;
-        if (profileData?.name && profileData.name.trim().length > 0) {
-          setUserName(profileData.name);
-          console.log("Nombre desde perfil:", profileData.name);
-          return;
+        // Cargar edad si es menor
+        if (profile?.user_type === "child") {
+          // Para menores, intentar obtener la edad del perfil
+          if (profile?.age) {
+            setUserAge(profile.age);
+          }
+        } else if (profile?.user_type === "parent") {
+          // Para padres, obtener el primer menor
+          const { data: children } = await authService.getChildren(user.id);
+          if (children && children.length > 0) {
+            setUserAge(children[0].age);
+          }
         }
-
-        // Fallback: usar el email
-        setUserName(user.email?.split("@")[0] || "Usuario");
-        console.log("Usando email como nombre");
       }
     } catch (error) {
-      console.error("Error loading user name:", error);
+      console.error("Error loading user data:", error);
       setUserName("Usuario");
     }
   };
@@ -155,7 +169,9 @@ export default function HomeMapScreen() {
             <Text style={styles.avatarText}>👤</Text>
           </View>
           <View>
-            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userName}>
+              {userName} {userAge ? `(${userAge} años)` : ""}
+            </Text>
             <Text style={styles.userStatus}>🟢 Activo</Text>
           </View>
         </View>
@@ -266,7 +282,7 @@ export default function HomeMapScreen() {
                 <Switch
                   value={notificationsEnabled}
                   onValueChange={setNotificationsEnabled}
-                  trackColor={{ false: "#E0E0E0", true: "#00b894ff" }}
+                  trackColor={{ false: "#E0E0E0", true: colors.primary }}
                   thumbColor="#FFF"
                 />
               </View>

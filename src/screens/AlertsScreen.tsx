@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { colors } from "../styles/colors";
 
 type AlertType = "urgente" | "informativa" | "seguridad";
 
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 14,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 22,
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
     marginTop: 20,
+    color: colors.textPrimary,
   },
   filters: {
     flexDirection: "row",
@@ -135,13 +137,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: "#DDD",
+    backgroundColor: colors.borderLight,
   },
   filterActive: {
-    backgroundColor: "#1B9B8C",
+    backgroundColor: colors.primary,
   },
   filterText: {
-    color: "#000",
+    color: colors.textPrimary,
     fontSize: 12,
   },
   card: {
@@ -160,6 +162,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontWeight: "bold",
     marginBottom: 4,
+    color: colors.textPrimary,
   },
   time: {
     fontSize: 11,
@@ -168,7 +171,7 @@ const styles = StyleSheet.create({
   },
   mark: {
     marginTop: 6,
-    color: "#1B9B8C",
+    color: colors.primary,
     fontWeight: "bold",
   },
 });

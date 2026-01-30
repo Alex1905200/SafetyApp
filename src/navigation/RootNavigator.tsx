@@ -3,13 +3,16 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthNavigator } from "./AuthNavigator";
 import { MainNavigator } from "./MainNavigator";
+import { ChildMainNavigator } from "./ChildMainNavigator";
 import { supabase } from "../config/supabase";
 import { RootStackParamList } from "./types";
+import { authService } from "../services/authService";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userType, setUserType] = useState<"parent" | "child" | null>(null);
 
   useEffect(() => {
     // Chequear sesión actual inmediatamente
@@ -17,9 +20,17 @@ export function RootNavigator() {
 
     // Usar el listener de autenticación de Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
         setIsLoggedIn(!!session);
+        
+        if (session?.user) {
+          // Obtener tipo de usuario
+          const { data: profile } = await authService.getProfile(session.user.id);
+          setUserType(profile?.user_type || "child");
+        } else {
+          setUserType(null);
+        }
       },
     );
 
@@ -35,14 +46,20 @@ export function RootNavigator() {
       } = await supabase.auth.getSession();
       console.log("Current session:", session?.user?.email);
       setIsLoggedIn(!!session);
+
+      if (session?.user) {
+        const { data: profile } = await authService.getProfile(session.user.id);
+        setUserType(profile?.user_type || "child");
+      }
     } catch (error) {
       console.error("Error checking session:", error);
       setIsLoggedIn(false);
+      setUserType(null);
     }
   };
 
   // Mientras carga, no mostrar nada
-  if (isLoggedIn === null) {
+  if (isLoggedIn === null || (isLoggedIn && userType === null)) {
     return null;
   }
 
@@ -61,10 +78,18 @@ export function RootNavigator() {
               animationTypeForReplace: isLoggedIn === false ? "pop" : "pop",
             }}
           />
-        ) : (
+        ) : userType === "parent" ? (
           <Stack.Screen
             name="Main"
             component={MainNavigator}
+            options={{
+              animationTypeForReplace: isLoggedIn === true ? "pop" : "pop",
+            }}
+          />
+        ) : (
+          <Stack.Screen
+            name="ChildMain"
+            component={ChildMainNavigator}
             options={{
               animationTypeForReplace: isLoggedIn === true ? "pop" : "pop",
             }}

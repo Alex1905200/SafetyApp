@@ -5,6 +5,7 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
+import { colors } from "../styles/colors";
 
 type HistoryItem = {
   id: string;
@@ -47,14 +48,6 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Historial</Text>
 
-      {/* RESUMEN */}
-      <View style={styles.summary}>
-        <Text>📊 Resumen del día</Text>
-        <Text>• Alertas: 1</Text>
-        <Text>• Desvíos: 1</Text>
-        <Text>• Llegadas a tiempo: ✔</Text>
-      </View>
-
       <FlatList
         data={HISTORY_DATA}
         keyExtractor={(item) => item.id}
@@ -79,7 +72,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 14,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 22,
@@ -87,15 +80,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
     marginTop: 20,
-  },
-  summary: {
-    backgroundColor: "#00b894ff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12,
+    color: colors.textPrimary,
   },
   card: {
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#ffffff",
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
@@ -111,9 +99,11 @@ const styles = StyleSheet.create({
   event: {
     fontSize: 14,
     fontWeight: "bold",
+    color: colors.textPrimary,
   },
   zone: {
     fontSize: 12,
     marginTop: 4,
+    color: colors.textPrimary,
   },
 });

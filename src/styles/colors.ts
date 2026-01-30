@@ -1,20 +1,25 @@
 export const colors = {
-  // Principales
-  primary: "#00B894",
-  primaryDark: "#00A085",
-  primaryLight: "#2DD4BF",
+  // Principales - Colores exactos del logo KidSecure
+  primary: "#41623e",
+  primaryDark: "#2d4a2b",
+  primaryLight: "#789e50",
 
-  // Alertas
-  danger: "#FF6B6B",
-  warning: "#FFC107",
-  success: "#28A745",
-  info: "#17A2B8",
+  // Tonos verdes secundarios - de la imagen
+  greenAccent: "#96bb66",
+  greenLight: "#a5b78e",
+  greenCream: "#dce6c9",
+
+  // Alertas - más vívidas
+  danger: "#FF5252",
+  warning: "#FFB300",
+  success: "#4CAF50",
+  info: "#41623e",
 
   // Backgrounds
-  warningBg: "#FFF3CD",
-  successBg: "#D4EDDA",
-  infoBg: "#D1ECF1",
-  dangerBg: "#F8D7DA",
+  warningBg: "#FFF8E1",
+  successBg: "#E8F5E9",
+  infoBg: "#dce6c9",
+  dangerBg: "#FFEBEE",
 
   // Neutrales
   white: "#FFFFFF",
@@ -33,12 +38,12 @@ export const colors = {
   gray900: "#212529",
 
   // Textos
-  textPrimary: "#333333",
-  textSecondary: "#666666",
-  textLight: "#999999",
+  textPrimary: "#41623e",
+  textSecondary: "#555555",
+  textLight: "#888888",
   textWhite: "#FFFFFF",
 
   // Bordes
-  border: "#E0E0E0",
-  borderLight: "#F0F0F0",
+  border: "#a5b78e",
+  borderLight: "#dce6c9",
 };

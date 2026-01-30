@@ -21,8 +21,8 @@ export const registerScreenStyles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   logoImage: {
-    width: 120,
-    height: 120,
+    width: 130,
+    height: 130,
     marginBottom: spacing.lg,
   },
   logoHeart: {
@@ -57,6 +57,29 @@ export const registerScreenStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.lg,
+  },
+  passwordInput: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    fontSize: fontSize.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  passwordToggle: {
+    position: "absolute",
+    right: spacing.lg,
+    padding: spacing.md,
+  },
+  passwordToggleIcon: {
+    fontSize: 20,
+  },
   registerButton: {
     backgroundColor: colors.primary,
     borderRadius: radius.full,
@@ -86,5 +109,39 @@ export const registerScreenStyles = StyleSheet.create({
   loginLink: {
     color: colors.primary,
     fontWeight: "bold",
+  },
+  label: {
+    fontSize: fontSize.lg,
+    fontWeight: "bold",
+    marginBottom: spacing.md,
+    color: colors.textPrimary,
+  },
+  typeButton: {
+    borderRadius: radius.lg,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  parentButton: {
+    backgroundColor: "#E8F5E9",
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  childButton: {
+    backgroundColor: "#E3F2FD",
+    borderWidth: 2,
+    borderColor: "#2196F3",
+  },
+  typeButtonText: {
+    fontSize: fontSize.xl,
+    fontWeight: "bold",
+    color: colors.textPrimary,
+  },
+  typeButtonSubtext: {
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
   },
 });
