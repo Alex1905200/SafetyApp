@@ -5,7 +5,7 @@ import { Tables } from "../types/database.types";
  * Obtener alertas
  */
 export const getAlerts = async (
-  userId: string
+  userId: string,
 ): Promise<Tables<"alerts">[]> => {
   const { data, error } = await supabase
     .from("alerts")

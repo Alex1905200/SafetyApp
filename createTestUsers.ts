@@ -19,21 +19,22 @@ async function createTestUsers() {
 
     // 1. Crear usuario padre
     console.log("1️⃣ Registrando usuario padre (pruebapadre@gmail.com)...");
-    const { data: parentAuthData, error: parentAuthError } = await supabase.auth.signUp({
-      email: "pruebapadre@gmail.com",
-      password: "padre12345",
-      options: {
-        data: {
-          name: "Padre de Prueba",
-          user_type: "parent",
+    const { data: parentAuthData, error: parentAuthError } =
+      await supabase.auth.signUp({
+        email: "pruebapadre@gmail.com",
+        password: "padre12345",
+        options: {
+          data: {
+            name: "Padre de Prueba",
+            user_type: "parent",
+          },
         },
-      },
-    });
+      });
 
     if (parentAuthError) {
       if (parentAuthError.message.includes("already registered")) {
         console.log("   ✓ Usuario padre ya existe");
-        
+
         // Intentar obtener el ID del usuario existente
         const { data: signInData } = await supabase.auth.signInWithPassword({
           email: "pruebapadre@gmail.com",
@@ -50,14 +51,19 @@ async function createTestUsers() {
 
       // Crear perfil del padre
       if (parentAuthData.user) {
-        const { error: parentProfileError } = await supabase.from("profiles").insert({
-          id: parentAuthData.user.id,
-          name: "Padre de Prueba",
-          email: "pruebapadre@gmail.com",
-          user_type: "parent",
-        });
+        const { error: parentProfileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: parentAuthData.user.id,
+            name: "Padre de Prueba",
+            email: "pruebapadre@gmail.com",
+            user_type: "parent",
+          });
 
-        if (parentProfileError && !parentProfileError.message.includes("duplicate")) {
+        if (
+          parentProfileError &&
+          !parentProfileError.message.includes("duplicate")
+        ) {
           console.warn("   ⚠ Advertencia al crear perfil:", parentProfileError);
         } else {
           console.log("   ✓ Perfil del padre creado");
@@ -67,16 +73,17 @@ async function createTestUsers() {
 
     // 2. Crear usuario hijo
     console.log("\n2️⃣ Registrando usuario hijo (pruebahijo@gmail.com)...");
-    const { data: childAuthData, error: childAuthError } = await supabase.auth.signUp({
-      email: "pruebahijo@gmail.com",
-      password: "hijo12345",
-      options: {
-        data: {
-          name: "Hijo de Prueba",
-          user_type: "child",
+    const { data: childAuthData, error: childAuthError } =
+      await supabase.auth.signUp({
+        email: "pruebahijo@gmail.com",
+        password: "hijo12345",
+        options: {
+          data: {
+            name: "Hijo de Prueba",
+            user_type: "child",
+          },
         },
-      },
-    });
+      });
 
     if (childAuthError) {
       if (childAuthError.message.includes("already registered")) {
@@ -89,15 +96,20 @@ async function createTestUsers() {
 
       // Crear perfil del hijo
       if (childAuthData.user) {
-        const { error: childProfileError } = await supabase.from("profiles").insert({
-          id: childAuthData.user.id,
-          name: "Hijo de Prueba",
-          email: "pruebahijo@gmail.com",
-          user_type: "child",
-          age: 12,
-        });
+        const { error: childProfileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: childAuthData.user.id,
+            name: "Hijo de Prueba",
+            email: "pruebahijo@gmail.com",
+            user_type: "child",
+            age: 12,
+          });
 
-        if (childProfileError && !childProfileError.message.includes("duplicate")) {
+        if (
+          childProfileError &&
+          !childProfileError.message.includes("duplicate")
+        ) {
           console.warn("   ⚠ Advertencia al crear perfil:", childProfileError);
         } else {
           console.log("   ✓ Perfil del hijo creado");

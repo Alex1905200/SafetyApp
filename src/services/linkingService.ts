@@ -11,7 +11,9 @@ const generateLinkCode = (): string => {
 };
 
 export const linkingService = {
-  async generateLinkCode(parentId: string): Promise<{ code: string | null; error: any }> {
+  async generateLinkCode(
+    parentId: string,
+  ): Promise<{ code: string | null; error: any }> {
     try {
       // Por ahora, generar código localmente (sin BD)
       const code = generateLinkCode();
@@ -25,15 +27,15 @@ export const linkingService = {
 
   async requestLinkWithCode(
     childId: string,
-    code: string
+    code: string,
   ): Promise<{ success: boolean; parentName?: string; error: any }> {
     try {
       // Simulación - en producción buscar en BD
       console.log("📱 Solicitando vinculación con código:", code);
-      return { 
-        success: true, 
+      return {
+        success: true,
         parentName: "Padre/Tutor",
-        error: null 
+        error: null,
       };
     } catch (error) {
       console.error("Error requesting link:", error);
@@ -41,7 +43,10 @@ export const linkingService = {
     }
   },
 
-  async approveLink(parentId: string, childId: string): Promise<{ success: boolean; error: any }> {
+  async approveLink(
+    parentId: string,
+    childId: string,
+  ): Promise<{ success: boolean; error: any }> {
     try {
       console.log("✅ Vinculación aprobada:", { parentId, childId });
       return { success: true, error: null };
@@ -51,7 +56,10 @@ export const linkingService = {
     }
   },
 
-  async rejectLink(parentId: string, childId: string): Promise<{ success: boolean; error: any }> {
+  async rejectLink(
+    parentId: string,
+    childId: string,
+  ): Promise<{ success: boolean; error: any }> {
     try {
       console.log("❌ Vinculación rechazada:", { parentId, childId });
       return { success: true, error: null };
@@ -76,7 +84,13 @@ export const linkingService = {
   },
 
   async getPendingRequests(parentId: string): Promise<{
-    requests: Array<{ id: string; childId: string; childName: string; childEmail?: string; createdAt: string }>;
+    requests: Array<{
+      id: string;
+      childId: string;
+      childName: string;
+      childEmail?: string;
+      createdAt: string;
+    }>;
     error: any;
   }> {
     try {
@@ -89,7 +103,12 @@ export const linkingService = {
   },
 
   async getLinkedChildren(parentId: string): Promise<{
-    children: Array<{ id: string; name: string; email: string; linkedAt: string }>;
+    children: Array<{
+      id: string;
+      name: string;
+      email: string;
+      linkedAt: string;
+    }>;
     error: any;
   }> {
     try {

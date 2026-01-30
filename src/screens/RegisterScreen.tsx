@@ -81,41 +81,62 @@ export default function RegisterScreen() {
         name.trim(),
         userType || "child",
         userType === "parent" ? childName.trim() : undefined,
-        userType === "parent" ? parseInt(childAge) : (userType === "child" ? parseInt(age) : undefined)
+        userType === "parent"
+          ? parseInt(childAge)
+          : userType === "child"
+            ? parseInt(age)
+            : undefined,
       );
 
       if (error) {
         const errorMessage = (error as any)?.message || "";
         const errorStatus = (error as any)?.status || "";
         const errorCode = (error as any)?.code || "";
-        
+
         // Verificar si falta la tabla en la base de datos
         if (errorStatus === "database_error" || errorCode === "PGRST205") {
           Alert.alert(
             "⚠️ Base de Datos No Configurada",
-            errorMessage || "Las tablas de la base de datos no están creadas. Abre DATABASE_SETUP.sql en el proyecto y ejecuta el contenido en Supabase SQL Editor.",
+            errorMessage ||
+              "Las tablas de la base de datos no están creadas. Abre DATABASE_SETUP.sql en el proyecto y ejecuta el contenido en Supabase SQL Editor.",
           );
         }
         // Verificar si es error de rate limit
-        else if (errorStatus === "rate_limit_error" || errorMessage.includes("rate_limit") || errorMessage.includes("Demasiados intentos")) {
+        else if (
+          errorStatus === "rate_limit_error" ||
+          errorMessage.includes("rate_limit") ||
+          errorMessage.includes("Demasiados intentos")
+        ) {
           Alert.alert(
             "Límite de Intentos",
             "Has superado el límite de registros. Por favor, espera 15-30 minutos e intenta de nuevo.",
           );
         }
         // Verificar si es error de red
-        else if (errorMessage.includes("Network") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch") || errorStatus === "network_error") {
+        else if (
+          errorMessage.includes("Network") ||
+          errorMessage.includes("network") ||
+          errorMessage.includes("Failed to fetch") ||
+          errorStatus === "network_error"
+        ) {
           Alert.alert(
             "Error de Conexión",
             "No se puede conectar con el servidor de Supabase. Por favor:\n\n1. Verifica tu conexión a internet\n2. Comprueba que las variables de entorno estén configuradas\n3. Verifica la URL y clave de Supabase en .env\n\nSi necesitas ayuda, consulta .env.example",
           );
-        } else if (errorStatus === "user_already_exists" || errorCode === "user_already_exists" || errorMessage.includes("already registered")) {
+        } else if (
+          errorStatus === "user_already_exists" ||
+          errorCode === "user_already_exists" ||
+          errorMessage.includes("already registered")
+        ) {
           Alert.alert(
             "Correo ya registrado",
             "Este correo ya está registrado. Inicia sesión o usa otro correo.",
             [
               { text: "Usar otro", style: "cancel" },
-              { text: "Iniciar sesión", onPress: () => navigation.navigate("Login") },
+              {
+                text: "Iniciar sesión",
+                onPress: () => navigation.navigate("Login"),
+              },
             ],
           );
         } else {
@@ -210,13 +231,17 @@ export default function RegisterScreen() {
               resizeMode="contain"
             />
             <Text style={styles.appTitle}>
-              {userType === "parent" ? "Crear Cuenta - Padre/Tutor" : "Crear Cuenta - Menor"}
+              {userType === "parent"
+                ? "Crear Cuenta - Padre/Tutor"
+                : "Crear Cuenta - Menor"}
             </Text>
           </View>
 
           <TextInput
             style={styles.input}
-            placeholder={userType === "parent" ? "Tu nombre completo" : "Nombre completo"}
+            placeholder={
+              userType === "parent" ? "Tu nombre completo" : "Nombre completo"
+            }
             placeholderTextColor="#999"
             value={name}
             onChangeText={setName}
@@ -306,7 +331,9 @@ export default function RegisterScreen() {
 
           {userType === "parent" && (
             <>
-              <Text style={styles.label}>Información del menor a monitorear</Text>
+              <Text style={styles.label}>
+                Información del menor a monitorear
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Nombre del menor"

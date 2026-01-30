@@ -79,13 +79,20 @@ export default function SettingsScreen() {
   // Estados para vinculación - PADRE
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
-  const [linkedChildrenAccounts, setLinkedChildrenAccounts] = useState<any[]>([]);
+  const [linkedChildrenAccounts, setLinkedChildrenAccounts] = useState<any[]>(
+    [],
+  );
   const [linkingLoading, setLinkingLoading] = useState(false);
 
   // Estados para vinculación - MENOR
   const [linkCode, setLinkCode] = useState("");
-  const [linkStatus, setLinkStatus] = useState<"none" | "pending" | "linked">("none");
-  const [linkedParentInfo, setLinkedParentInfo] = useState<{ name: string; email: string } | null>(null);
+  const [linkStatus, setLinkStatus] = useState<"none" | "pending" | "linked">(
+    "none",
+  );
+  const [linkedParentInfo, setLinkedParentInfo] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
 
   useEffect(() => {
     loadUserData();
@@ -93,20 +100,23 @@ export default function SettingsScreen() {
 
   const loadUserData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       setUserId(user.id);
 
       const { data: profile } = await authService.getProfile(user.id);
       const profileData = profile as any;
-      
+
       const metadataUserType = user.user_metadata?.user_type;
-      const finalUserType = profileData?.user_type || metadataUserType || "child";
-      
+      const finalUserType =
+        profileData?.user_type || metadataUserType || "child";
+
       setName(profileData?.first_name || user.user_metadata?.name || "");
       setAge(profileData?.age?.toString() || "");
-      
+
       const parentStatus = finalUserType === "parent";
       console.log("📋 SettingsScreen - isParent:", parentStatus);
       setIsParent(parentStatus);
@@ -116,7 +126,7 @@ export default function SettingsScreen() {
         const { data: childrenData } = await authService.getChildren(user.id);
         if (childrenData) {
           setChildren(childrenData);
-          
+
           const linked: LinkedChild[] = childrenData.map((child) => ({
             id: child.id,
             name: child.name,
@@ -126,7 +136,7 @@ export default function SettingsScreen() {
           }));
           setLinkedChildren(linked);
         }
-        
+
         // Cargar solicitudes pendientes
         try {
           const { requests } = await linkingService.getPendingRequests(user.id);
@@ -134,10 +144,11 @@ export default function SettingsScreen() {
         } catch (e) {
           console.log("No se pudieron cargar solicitudes pendientes");
         }
-        
+
         // Cargar hijos vinculados (cuentas)
         try {
-          const { children: linkedAccounts } = await linkingService.getLinkedChildren(user.id);
+          const { children: linkedAccounts } =
+            await linkingService.getLinkedChildren(user.id);
           setLinkedChildrenAccounts(linkedAccounts);
         } catch (e) {
           console.log("No se pudieron cargar cuentas vinculadas");
@@ -145,7 +156,9 @@ export default function SettingsScreen() {
       } else {
         // Cargar estado de vinculación del menor
         try {
-          const { status, parent } = await linkingService.getChildLinkStatus(user.id);
+          const { status, parent } = await linkingService.getChildLinkStatus(
+            user.id,
+          );
           setLinkStatus(status);
           if (parent) {
             setLinkedParentInfo({ name: parent.name, email: parent.email });
@@ -169,10 +182,13 @@ export default function SettingsScreen() {
       setGeneratedCode(code);
       Alert.alert(
         "Código generado",
-        `Comparte este código con tu hijo:\n\n${code}\n\nVálido por 15 minutos`
+        `Comparte este código con tu hijo:\n\n${code}\n\nVálido por 15 minutos`,
       );
     } catch (error) {
-      Alert.alert("Error", "No se pudo generar el código. Verifica que las tablas estén creadas en la base de datos.");
+      Alert.alert(
+        "Error",
+        "No se pudo generar el código. Verifica que las tablas estén creadas en la base de datos.",
+      );
     } finally {
       setLinkingLoading(false);
     }
@@ -190,9 +206,15 @@ export default function SettingsScreen() {
           onPress: async () => {
             setLinkingLoading(true);
             try {
-              const { error } = await linkingService.approveLink(userId, childId);
+              const { error } = await linkingService.approveLink(
+                userId,
+                childId,
+              );
               if (error) throw error;
-              Alert.alert("¡Vinculación exitosa!", `${childName} ahora está vinculado contigo`);
+              Alert.alert(
+                "¡Vinculación exitosa!",
+                `${childName} ahora está vinculado contigo`,
+              );
               loadUserData(); // Recargar datos
             } catch (error) {
               Alert.alert("Error", "No se pudo aprobar la vinculación");
@@ -201,7 +223,7 @@ export default function SettingsScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -218,7 +240,10 @@ export default function SettingsScreen() {
           onPress: async () => {
             setLinkingLoading(true);
             try {
-              const { error } = await linkingService.rejectLink(userId, childId);
+              const { error } = await linkingService.rejectLink(
+                userId,
+                childId,
+              );
               if (error) throw error;
               Alert.alert("Solicitud rechazada");
               loadUserData();
@@ -229,7 +254,7 @@ export default function SettingsScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -242,32 +267,40 @@ export default function SettingsScreen() {
 
     setLinkingLoading(true);
     try {
-      const { success, parentName, error } = await linkingService.requestLinkWithCode(
-        userId,
-        linkCode.trim()
-      );
+      const { success, parentName, error } =
+        await linkingService.requestLinkWithCode(userId, linkCode.trim());
 
       if (!success) {
-        Alert.alert("Error", (error as any)?.message || "Código inválido o expirado");
+        Alert.alert(
+          "Error",
+          (error as any)?.message || "Código inválido o expirado",
+        );
         return;
       }
 
       Alert.alert(
         "¡Solicitud enviada!",
-        `Se ha enviado una solicitud de vinculación a ${parentName}. Espera a que la apruebe.`
+        `Se ha enviado una solicitud de vinculación a ${parentName}. Espera a que la apruebe.`,
       );
       setLinkCode("");
       setLinkStatus("pending");
       setLinkedParentInfo({ name: parentName || "Padre/Tutor", email: "" });
     } catch (error) {
-      Alert.alert("Error", "No se pudo enviar la solicitud. Verifica que las tablas estén creadas.");
+      Alert.alert(
+        "Error",
+        "No se pudo enviar la solicitud. Verifica que las tablas estén creadas.",
+      );
     } finally {
       setLinkingLoading(false);
     }
   };
 
   const handleAddContact = () => {
-    if (!newContactName.trim() || !newContactPhone.trim() || !newContactRelation.trim()) {
+    if (
+      !newContactName.trim() ||
+      !newContactPhone.trim() ||
+      !newContactRelation.trim()
+    ) {
       Alert.alert("Error", "Completa todos los campos");
       return;
     }
@@ -282,8 +315,8 @@ export default function SettingsScreen() {
                 phone: newContactPhone.trim(),
                 relation: newContactRelation.trim(),
               }
-            : c
-        )
+            : c,
+        ),
       );
       Alert.alert("Éxito", "Contacto actualizado");
       setEditingContactId(null);
@@ -325,7 +358,7 @@ export default function SettingsScreen() {
       {
         text: "Eliminar",
         style: "destructive",
-        onPress: () => setContacts(contacts.filter(c => c.id !== id)),
+        onPress: () => setContacts(contacts.filter((c) => c.id !== id)),
       },
     ]);
   };
@@ -369,7 +402,7 @@ export default function SettingsScreen() {
       const { data: newChild } = await authService.addChild(
         userId,
         newChildName.trim(),
-        parseInt(newChildAge)
+        parseInt(newChildAge),
       );
 
       if (newChild) {
@@ -489,7 +522,11 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => {
-                    if (newContactName && newContactPhone && newContactRelation) {
+                    if (
+                      newContactName &&
+                      newContactPhone &&
+                      newContactRelation
+                    ) {
                       handleAddContact();
                     }
                   }}
@@ -512,11 +549,21 @@ export default function SettingsScreen() {
                   <View style={styles.contactInfo}>
                     <Text style={styles.contactName}>{contact.name}</Text>
                     <View style={styles.contactDetail}>
-                      <MaterialCommunityIcons name="account-heart" size={14} color={colors.primary} />
-                      <Text style={styles.contactRelation}>{contact.relation} del menor</Text>
+                      <MaterialCommunityIcons
+                        name="account-heart"
+                        size={14}
+                        color={colors.primary}
+                      />
+                      <Text style={styles.contactRelation}>
+                        {contact.relation} del menor
+                      </Text>
                     </View>
                     <View style={styles.contactDetail}>
-                      <MaterialCommunityIcons name="phone" size={14} color={colors.textSecondary} />
+                      <MaterialCommunityIcons
+                        name="phone"
+                        size={14}
+                        color={colors.textSecondary}
+                      />
                       <Text style={styles.contactPhone}>{contact.phone}</Text>
                     </View>
                   </View>
@@ -525,7 +572,11 @@ export default function SettingsScreen() {
                       onPress={() => handleEditContact(contact)}
                       style={styles.editIconButton}
                     >
-                      <MaterialCommunityIcons name="pencil" size={20} color={colors.primary} />
+                      <MaterialCommunityIcons
+                        name="pencil"
+                        size={20}
+                        color={colors.primary}
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -534,7 +585,11 @@ export default function SettingsScreen() {
                     onPress={() => handleRemoveContact(contact.id)}
                     style={styles.removeContactButton}
                   >
-                    <MaterialCommunityIcons name="trash-can" size={16} color="#E53935" />
+                    <MaterialCommunityIcons
+                      name="trash-can"
+                      size={16}
+                      color="#E53935"
+                    />
                     <Text style={styles.removeContactText}>Eliminar</Text>
                   </TouchableOpacity>
                 )}
@@ -544,7 +599,9 @@ export default function SettingsScreen() {
             {editing && (
               <View style={styles.addContactForm}>
                 <Text style={styles.formTitle}>
-                  {editingContactId ? "✏️ Editar contacto" : "➕ Nuevo contacto"}
+                  {editingContactId
+                    ? "✏️ Editar contacto"
+                    : "➕ Nuevo contacto"}
                 </Text>
                 <TextInput
                   style={styles.input}
@@ -572,11 +629,15 @@ export default function SettingsScreen() {
                     style={[
                       styles.formButton,
                       styles.saveFormButton,
-                      (!newContactName || !newContactPhone || !newContactRelation) &&
+                      (!newContactName ||
+                        !newContactPhone ||
+                        !newContactRelation) &&
                         styles.buttonDisabled,
                     ]}
                     onPress={handleAddContact}
-                    disabled={!newContactName || !newContactPhone || !newContactRelation}
+                    disabled={
+                      !newContactName || !newContactPhone || !newContactRelation
+                    }
                   >
                     <Text style={styles.formButtonText}>
                       {editingContactId ? "Actualizar" : "Agregar"}
@@ -604,8 +665,14 @@ export default function SettingsScreen() {
 
             {linkedChildren.length === 0 ? (
               <View style={styles.emptyState}>
-                <MaterialCommunityIcons name="account-off" size={40} color="#999" />
-                <Text style={styles.emptyStateText}>No hay hijos vinculados</Text>
+                <MaterialCommunityIcons
+                  name="account-off"
+                  size={40}
+                  color="#999"
+                />
+                <Text style={styles.emptyStateText}>
+                  No hay hijos vinculados
+                </Text>
                 <Text style={styles.emptyStateSubtext}>
                   Genera un código y compártelo con tu hijo
                 </Text>
@@ -619,7 +686,9 @@ export default function SettingsScreen() {
                     </View>
                     <View style={styles.linkedChildInfo}>
                       <Text style={styles.linkedChildName}>{child.name}</Text>
-                      <Text style={styles.linkedChildAge}>{child.age} años</Text>
+                      <Text style={styles.linkedChildAge}>
+                        {child.age} años
+                      </Text>
                     </View>
                     <View style={styles.linkedBadge}>
                       <Text style={styles.linkedBadgeText}>✓ Vinculado</Text>
@@ -627,12 +696,24 @@ export default function SettingsScreen() {
                   </View>
                   <View style={styles.linkedChildDetails}>
                     <View style={styles.linkedChildDetail}>
-                      <MaterialCommunityIcons name="email" size={16} color={colors.primary} />
-                      <Text style={styles.linkedChildDetailText}>{child.email || "Sin correo"}</Text>
+                      <MaterialCommunityIcons
+                        name="email"
+                        size={16}
+                        color={colors.primary}
+                      />
+                      <Text style={styles.linkedChildDetailText}>
+                        {child.email || "Sin correo"}
+                      </Text>
                     </View>
                     <View style={styles.linkedChildDetail}>
-                      <MaterialCommunityIcons name="phone" size={16} color={colors.textSecondary} />
-                      <Text style={styles.linkedChildDetailText}>{child.phone || "Sin teléfono"}</Text>
+                      <MaterialCommunityIcons
+                        name="phone"
+                        size={16}
+                        color={colors.textSecondary}
+                      />
+                      <Text style={styles.linkedChildDetailText}>
+                        {child.phone || "Sin teléfono"}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -643,7 +724,9 @@ export default function SettingsScreen() {
           {/* SOLICITUDES DE VINCULACIÓN PENDIENTES */}
           {pendingRequests.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>📨 Solicitudes de vinculación</Text>
+              <Text style={styles.sectionTitle}>
+                📨 Solicitudes de vinculación
+              </Text>
               <Text style={styles.sectionSubtitle}>
                 Menores que solicitan vincularse contigo
               </Text>
@@ -655,21 +738,29 @@ export default function SettingsScreen() {
                       <Text style={styles.requestAvatarText}>👦</Text>
                     </View>
                     <View style={styles.requestInfo}>
-                      <Text style={styles.requestName}>{request.childName}</Text>
-                      <Text style={styles.requestEmail}>{request.childEmail}</Text>
+                      <Text style={styles.requestName}>
+                        {request.childName}
+                      </Text>
+                      <Text style={styles.requestEmail}>
+                        {request.childEmail}
+                      </Text>
                     </View>
                   </View>
                   <View style={styles.requestActions}>
                     <TouchableOpacity
                       style={[styles.requestButton, styles.approveButton]}
-                      onPress={() => handleApproveLink(request.childId, request.childName)}
+                      onPress={() =>
+                        handleApproveLink(request.childId, request.childName)
+                      }
                       disabled={linkingLoading}
                     >
                       <Text style={styles.requestButtonText}>✓ Aprobar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.requestButton, styles.rejectButton]}
-                      onPress={() => handleRejectLink(request.childId, request.childName)}
+                      onPress={() =>
+                        handleRejectLink(request.childId, request.childName)
+                      }
                       disabled={linkingLoading}
                     >
                       <Text style={styles.requestButtonText}>✕ Rechazar</Text>
@@ -696,7 +787,10 @@ export default function SettingsScreen() {
             )}
 
             <TouchableOpacity
-              style={[styles.generateCodeButton, linkingLoading && styles.buttonDisabled]}
+              style={[
+                styles.generateCodeButton,
+                linkingLoading && styles.buttonDisabled,
+              ]}
               onPress={handleGenerateCode}
               disabled={linkingLoading}
             >
@@ -704,7 +798,11 @@ export default function SettingsScreen() {
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <>
-                  <MaterialCommunityIcons name="qrcode-plus" size={20} color="#FFF" />
+                  <MaterialCommunityIcons
+                    name="qrcode-plus"
+                    size={20}
+                    color="#FFF"
+                  />
                   <Text style={styles.generateCodeText}>
                     {generatedCode ? "Generar nuevo código" : "Generar código"}
                   </Text>
@@ -722,8 +820,14 @@ export default function SettingsScreen() {
 
             {linkedChildrenAccounts.length === 0 ? (
               <View style={styles.emptyState}>
-                <MaterialCommunityIcons name="account-off" size={40} color="#999" />
-                <Text style={styles.emptyStateText}>No hay cuentas vinculadas</Text>
+                <MaterialCommunityIcons
+                  name="account-off"
+                  size={40}
+                  color="#999"
+                />
+                <Text style={styles.emptyStateText}>
+                  No hay cuentas vinculadas
+                </Text>
                 <Text style={styles.emptyStateSubtext}>
                   Genera un código y compártelo con tu hijo
                 </Text>
@@ -737,7 +841,9 @@ export default function SettingsScreen() {
                     </View>
                     <View style={styles.linkedAccountInfo}>
                       <Text style={styles.linkedAccountName}>{child.name}</Text>
-                      <Text style={styles.linkedAccountEmail}>{child.email}</Text>
+                      <Text style={styles.linkedAccountEmail}>
+                        {child.email}
+                      </Text>
                     </View>
                     <View style={styles.linkedBadge}>
                       <Text style={styles.linkedBadgeText}>✓ Vinculado</Text>
@@ -756,22 +862,40 @@ export default function SettingsScreen() {
 
             {editing ? (
               <>
-                <TextInput value={name} onChangeText={setName} style={styles.input} placeholder="Nombre" />
-                <TextInput value={age} onChangeText={setAge} keyboardType="numeric" style={styles.input} placeholder="Edad" />
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  style={styles.input}
+                  placeholder="Nombre"
+                />
+                <TextInput
+                  value={age}
+                  onChangeText={setAge}
+                  keyboardType="numeric"
+                  style={styles.input}
+                  placeholder="Edad"
+                />
               </>
             ) : (
               <>
-                <Text style={styles.profileText}>Nombre: {name || "No especificado"}</Text>
-                <Text style={styles.profileText}>Edad: {age ? `${age} años` : "No especificada"}</Text>
+                <Text style={styles.profileText}>
+                  Nombre: {name || "No especificado"}
+                </Text>
+                <Text style={styles.profileText}>
+                  Edad: {age ? `${age} años` : "No especificada"}
+                </Text>
               </>
             )}
           </View>
 
           {/* VINCULACIÓN CON PADRE - PARA MENORES */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔗 Vinculación con padre/tutor</Text>
+            <Text style={styles.sectionTitle}>
+              🔗 Vinculación con padre/tutor
+            </Text>
             <Text style={styles.sectionSubtitle}>
-              Vincula tu cuenta con la de tu padre o tutor para que pueda ver tu ubicación
+              Vincula tu cuenta con la de tu padre o tutor para que pueda ver tu
+              ubicación
             </Text>
 
             {linkStatus === "linked" && linkedParentInfo ? (
@@ -781,8 +905,12 @@ export default function SettingsScreen() {
                     <Text style={styles.linkedParentAvatarText}>👨‍👩‍👧</Text>
                   </View>
                   <View style={styles.linkedParentInfo}>
-                    <Text style={styles.linkedParentName}>{linkedParentInfo.name}</Text>
-                    <Text style={styles.linkedParentEmail}>{linkedParentInfo.email}</Text>
+                    <Text style={styles.linkedParentName}>
+                      {linkedParentInfo.name}
+                    </Text>
+                    <Text style={styles.linkedParentEmail}>
+                      {linkedParentInfo.email}
+                    </Text>
                   </View>
                   <View style={[styles.statusBadge, styles.statusLinked]}>
                     <Text style={styles.statusBadgeText}>✓ Vinculado</Text>
@@ -796,8 +924,12 @@ export default function SettingsScreen() {
                     <Text style={styles.linkedParentAvatarText}>⏳</Text>
                   </View>
                   <View style={styles.linkedParentInfo}>
-                    <Text style={styles.linkedParentName}>{linkedParentInfo.name}</Text>
-                    <Text style={styles.pendingText}>Esperando aprobación...</Text>
+                    <Text style={styles.linkedParentName}>
+                      {linkedParentInfo.name}
+                    </Text>
+                    <Text style={styles.pendingText}>
+                      Esperando aprobación...
+                    </Text>
                   </View>
                   <View style={[styles.statusBadge, styles.statusPending]}>
                     <Text style={styles.statusBadgeText}>Pendiente</Text>
@@ -806,9 +938,12 @@ export default function SettingsScreen() {
               </View>
             ) : (
               <View style={styles.linkForm}>
-                <Text style={styles.linkFormTitle}>📝 Ingresa el código de tu padre/tutor</Text>
+                <Text style={styles.linkFormTitle}>
+                  📝 Ingresa el código de tu padre/tutor
+                </Text>
                 <Text style={styles.linkFormSubtitle}>
-                  Pide a tu padre que genere un código desde su app y escríbelo aquí
+                  Pide a tu padre que genere un código desde su app y escríbelo
+                  aquí
                 </Text>
                 <TextInput
                   style={styles.codeInput}
@@ -823,7 +958,8 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   style={[
                     styles.linkButton,
-                    (linkCode.length !== 6 || linkingLoading) && styles.buttonDisabled
+                    (linkCode.length !== 6 || linkingLoading) &&
+                      styles.buttonDisabled,
                   ]}
                   onPress={handleRequestLinkWithCode}
                   disabled={linkCode.length !== 6 || linkingLoading}
@@ -832,8 +968,14 @@ export default function SettingsScreen() {
                     <ActivityIndicator color="#FFF" />
                   ) : (
                     <>
-                      <MaterialCommunityIcons name="link-plus" size={20} color="#FFF" />
-                      <Text style={styles.linkButtonText}>Vincular con padre/tutor</Text>
+                      <MaterialCommunityIcons
+                        name="link-plus"
+                        size={20}
+                        color="#FFF"
+                      />
+                      <Text style={styles.linkButtonText}>
+                        Vincular con padre/tutor
+                      </Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -850,9 +992,17 @@ export default function SettingsScreen() {
 
             {contacts.length === 0 ? (
               <View style={styles.emptyState}>
-                <MaterialCommunityIcons name="account-off" size={40} color="#999" />
-                <Text style={styles.emptyStateText}>No hay contactos configurados</Text>
-                <Text style={styles.emptyStateSubtext}>Tu padre/tutor debe agregarlos</Text>
+                <MaterialCommunityIcons
+                  name="account-off"
+                  size={40}
+                  color="#999"
+                />
+                <Text style={styles.emptyStateText}>
+                  No hay contactos configurados
+                </Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Tu padre/tutor debe agregarlos
+                </Text>
               </View>
             ) : (
               contacts.map((contact) => (
@@ -864,11 +1014,21 @@ export default function SettingsScreen() {
                     <View style={styles.contactInfo}>
                       <Text style={styles.contactName}>{contact.name}</Text>
                       <View style={styles.contactDetail}>
-                        <MaterialCommunityIcons name="account-heart" size={14} color={colors.primary} />
-                        <Text style={styles.contactRelation}>{contact.relation}</Text>
+                        <MaterialCommunityIcons
+                          name="account-heart"
+                          size={14}
+                          color={colors.primary}
+                        />
+                        <Text style={styles.contactRelation}>
+                          {contact.relation}
+                        </Text>
                       </View>
                       <View style={styles.contactDetail}>
-                        <MaterialCommunityIcons name="phone" size={14} color={colors.textSecondary} />
+                        <MaterialCommunityIcons
+                          name="phone"
+                          size={14}
+                          color={colors.textSecondary}
+                        />
                         <Text style={styles.contactPhone}>{contact.phone}</Text>
                       </View>
                     </View>
@@ -891,7 +1051,10 @@ export default function SettingsScreen() {
                 if (newZoneName) {
                   handleAddZone();
                 } else {
-                  Alert.alert("Completa los datos", "Ingresa el nombre de la zona");
+                  Alert.alert(
+                    "Completa los datos",
+                    "Ingresa el nombre de la zona",
+                  );
                 }
               }}
             >
@@ -913,7 +1076,11 @@ export default function SettingsScreen() {
                 onPress={() => handleRemoveZone(index)}
                 style={styles.deleteButton}
               >
-                <MaterialCommunityIcons name="trash-can" size={20} color="#E53935" />
+                <MaterialCommunityIcons
+                  name="trash-can"
+                  size={20}
+                  color="#E53935"
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -957,7 +1124,11 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>🛣️ Ruta diaria</Text>
 
         {editing && isParent ? (
-          <TextInput value={route} onChangeText={setRoute} style={styles.input} />
+          <TextInput
+            value={route}
+            onChangeText={setRoute}
+            style={styles.input}
+          />
         ) : (
           <Text style={styles.profileText}>{route}</Text>
         )}
@@ -1020,7 +1191,10 @@ export default function SettingsScreen() {
               onChangeText={setNewPassword}
               style={styles.input}
             />
-            <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleChangePassword}
+            >
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1060,31 +1234,41 @@ export default function SettingsScreen() {
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.buttonText}>Guardar cambios</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setEditing(false)}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setEditing(false)}
+            >
               <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity style={styles.editButton} onPress={() => setEditing(true)}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => setEditing(true)}
+          >
             <Text style={styles.buttonText}>Editar</Text>
           </TouchableOpacity>
         )
-      ) : (
-        // Menores solo pueden editar su perfil básico
-        editing ? (
-          <View>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.buttonText}>Guardar cambios</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setEditing(false)}>
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity style={styles.editButton} onPress={() => setEditing(true)}>
-            <Text style={styles.buttonText}>Editar mi perfil</Text>
+      ) : // Menores solo pueden editar su perfil básico
+      editing ? (
+        <View>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.buttonText}>Guardar cambios</Text>
           </TouchableOpacity>
-        )
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => setEditing(false)}
+          >
+            <Text style={styles.buttonText}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => setEditing(true)}
+        >
+          <Text style={styles.buttonText}>Editar mi perfil</Text>
+        </TouchableOpacity>
       )}
     </ScrollView>
   );
@@ -1702,4 +1886,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-

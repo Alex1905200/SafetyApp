@@ -47,12 +47,15 @@ export function RootNavigator() {
       console.log("👤 User type from profile:", profileData?.user_type);
 
       // Verificar también en user_metadata si no está en profile
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const metadataUserType = user?.user_metadata?.user_type;
 
       console.log("👤 User type from metadata:", metadataUserType);
 
-      const finalUserType = profileData?.user_type || metadataUserType || "child";
+      const finalUserType =
+        profileData?.user_type || metadataUserType || "child";
       console.log("✅ Final user type:", finalUserType);
 
       setUserType(finalUserType);
@@ -64,7 +67,9 @@ export function RootNavigator() {
 
   const checkCurrentSession = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session?.user) {
         console.log("📱 Current session found:", session.user.email);

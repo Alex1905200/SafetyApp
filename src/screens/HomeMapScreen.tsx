@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -36,16 +30,34 @@ interface EmergencyContact {
 }
 
 export default function HomeMapScreen() {
-  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(
+    null,
+  );
   const [userName, setUserName] = useState("Usuario");
   const [userType, setUserType] = useState<"parent" | "child" | null>(null);
-  const [childrenLocations, setChildrenLocations] = useState<ChildLocation[]>([]);
+  const [childrenLocations, setChildrenLocations] = useState<ChildLocation[]>(
+    [],
+  );
   const mapRef = useRef<MapView>(null);
 
   // 🆕 Estado para contactos de emergencia
-  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([
-    { id: "1", name: "Mamá", phone: "+34 600 123 456", relation: "Madre", icon: "👩" },
-    { id: "2", name: "Papá", phone: "+34 600 789 012", relation: "Padre", icon: "👨" },
+  const [emergencyContacts, setEmergencyContacts] = useState<
+    EmergencyContact[]
+  >([
+    {
+      id: "1",
+      name: "Mamá",
+      phone: "+34 600 123 456",
+      relation: "Madre",
+      icon: "👩",
+    },
+    {
+      id: "2",
+      name: "Papá",
+      phone: "+34 600 789 012",
+      relation: "Padre",
+      icon: "👨",
+    },
   ]);
 
   useEffect(() => {
@@ -81,21 +93,27 @@ export default function HomeMapScreen() {
       if (profile?.user_type === "parent") {
         const { data: children } = await authService.getChildren(user.id);
         const childrenData = children as Tables<"children">[] | null;
-        
+
         if (childrenData && childrenData.length > 0) {
           // Simular ubicaciones de los hijos (en producción, obtener de la BD)
-          const childLocations: ChildLocation[] = childrenData.map((child, index) => ({
-            id: child.id,
-            name: child.name,
-            age: child.age,
-            location: {
-              // Ubicaciones simuladas cerca de la ubicación actual
-              latitude: (currentLocation?.latitude || -0.1807) + (Math.random() - 0.5) * 0.01,
-              longitude: (currentLocation?.longitude || -78.4678) + (Math.random() - 0.5) * 0.01,
-              timestamp: Date.now(),
-            },
-            isActive: true,
-          }));
+          const childLocations: ChildLocation[] = childrenData.map(
+            (child, index) => ({
+              id: child.id,
+              name: child.name,
+              age: child.age,
+              location: {
+                // Ubicaciones simuladas cerca de la ubicación actual
+                latitude:
+                  (currentLocation?.latitude || -0.1807) +
+                  (Math.random() - 0.5) * 0.01,
+                longitude:
+                  (currentLocation?.longitude || -78.4678) +
+                  (Math.random() - 0.5) * 0.01,
+                timestamp: Date.now(),
+              },
+              isActive: true,
+            }),
+          );
           setChildrenLocations(childLocations);
         }
       }
@@ -137,12 +155,15 @@ export default function HomeMapScreen() {
 
   const centerOnChild = (childLocation: ChildLocation) => {
     if (childLocation.location && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: childLocation.location.latitude,
-        longitude: childLocation.location.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 500);
+      mapRef.current.animateToRegion(
+        {
+          latitude: childLocation.location.latitude,
+          longitude: childLocation.location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        500,
+      );
     }
   };
 
@@ -156,29 +177,28 @@ export default function HomeMapScreen() {
           text: "Enviar Alerta",
           style: "destructive",
           onPress: () => {
-            Alert.alert("¡Alerta Enviada!", "Tus contactos han sido notificados");
+            Alert.alert(
+              "¡Alerta Enviada!",
+              "Tus contactos han sido notificados",
+            );
           },
         },
-      ]
+      ],
     );
   };
 
   // 🆕 Función para llamar a contacto
   const handleCallContact = (contact: EmergencyContact) => {
-    Alert.alert(
-      `Llamar a ${contact.name}`,
-      `¿Llamar al ${contact.phone}?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Llamar",
-          onPress: () => {
-            // Aquí iría la lógica para hacer la llamada
-            Alert.alert("Llamando...", `Conectando con ${contact.name}`);
-          },
+    Alert.alert(`Llamar a ${contact.name}`, `¿Llamar al ${contact.phone}?`, [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Llamar",
+        onPress: () => {
+          // Aquí iría la lógica para hacer la llamada
+          Alert.alert("Llamando...", `Conectando con ${contact.name}`);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // Vista para PADRE - Solo mapa con hijos
@@ -188,7 +208,10 @@ export default function HomeMapScreen() {
         {/* Header minimalista */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>📍 Ubicación de mis hijos</Text>
-          <TouchableOpacity onPress={getCurrentLocation} style={styles.refreshButton}>
+          <TouchableOpacity
+            onPress={getCurrentLocation}
+            style={styles.refreshButton}
+          >
             <MaterialCommunityIcons name="refresh" size={24} color="#FFF" />
           </TouchableOpacity>
         </View>
@@ -223,7 +246,7 @@ export default function HomeMapScreen() {
                   <Text style={styles.childMarkerText}>👦</Text>
                 </View>
               </Marker>
-            ) : null
+            ) : null,
           )}
         </MapView>
 
@@ -248,7 +271,12 @@ export default function HomeMapScreen() {
                   <Text style={styles.childName}>{child.name}</Text>
                   <Text style={styles.childAge}>{child.age} años</Text>
                 </View>
-                <View style={[styles.statusDot, child.isActive ? styles.active : styles.inactive]} />
+                <View
+                  style={[
+                    styles.statusDot,
+                    child.isActive ? styles.active : styles.inactive,
+                  ]}
+                />
               </TouchableOpacity>
             ))
           )}
@@ -299,7 +327,9 @@ export default function HomeMapScreen() {
 
       {/* 🆕 Tarjetas de Contactos de Emergencia */}
       <View style={styles.contactsSection}>
-        <Text style={styles.contactsSectionTitle}>📞 Contactos de emergencia</Text>
+        <Text style={styles.contactsSectionTitle}>
+          📞 Contactos de emergencia
+        </Text>
         <View style={styles.contactsGrid}>
           {emergencyContacts.map((contact) => (
             <TouchableOpacity
@@ -317,10 +347,19 @@ export default function HomeMapScreen() {
           {/* Botón para agregar (redirige a configuración) */}
           <TouchableOpacity
             style={[styles.contactCard, styles.addContactCard]}
-            onPress={() => Alert.alert("Info", "Los contactos deben ser agregados por tu padre/tutor en Configuración")}
+            onPress={() =>
+              Alert.alert(
+                "Info",
+                "Los contactos deben ser agregados por tu padre/tutor en Configuración",
+              )
+            }
           >
             <View style={styles.addContactIcon}>
-              <MaterialCommunityIcons name="plus" size={28} color={colors.primary} />
+              <MaterialCommunityIcons
+                name="plus"
+                size={28}
+                color={colors.primary}
+              />
             </View>
             <Text style={styles.addContactText}>Agregar</Text>
           </TouchableOpacity>
@@ -328,7 +367,10 @@ export default function HomeMapScreen() {
       </View>
 
       {/* Botón de Alerta */}
-      <TouchableOpacity style={styles.alertButton} onPress={handleEmergencyAlert}>
+      <TouchableOpacity
+        style={styles.alertButton}
+        onPress={handleEmergencyAlert}
+      >
         <Text style={styles.alertButtonText}>🚨 Botón de Alerta</Text>
       </TouchableOpacity>
     </View>

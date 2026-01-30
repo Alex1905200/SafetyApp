@@ -8,7 +8,7 @@ export const authService = {
     name: string,
     userType: "parent" | "child" = "child",
     childName?: string,
-    childAge?: number
+    childAge?: number,
   ) {
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -28,23 +28,27 @@ export const authService = {
       }
 
       if (authData.user) {
-        const { error: profileError } = await (supabase as any).from("profiles").insert({
-          id: authData.user.id,
-          first_name: name,
-          email: email,
-          user_type: userType,
-        });
+        const { error: profileError } = await (supabase as any)
+          .from("profiles")
+          .insert({
+            id: authData.user.id,
+            first_name: name,
+            email: email,
+            user_type: userType,
+          });
 
         if (profileError && profileError.code !== "23505") {
           throw profileError;
         }
 
         if (userType === "parent" && childName && childAge) {
-          const { error: childError } = await (supabase as any).from("children").insert({
-            parent_id: authData.user.id,
-            name: childName,
-            age: childAge,
-          });
+          const { error: childError } = await (supabase as any)
+            .from("children")
+            .insert({
+              parent_id: authData.user.id,
+              name: childName,
+              age: childAge,
+            });
 
           if (childError) {
             console.error("Error al crear registro del menor:", childError);
@@ -56,30 +60,39 @@ export const authService = {
     } catch (error: any) {
       const errorMessage = error?.message || "Error desconocido";
       const errorCode = error?.code || "";
-      
-      if (errorCode === "PGRST205" || errorMessage.includes("Could not find the table")) {
-        return { 
-          data: null, 
+
+      if (
+        errorCode === "PGRST205" ||
+        errorMessage.includes("Could not find the table")
+      ) {
+        return {
+          data: null,
           error: {
             message: "❌ Las tablas de la base de datos no están creadas.",
             status: "database_error",
-            ...error
-          }
-        };
-      }
-      
-      if (errorCode.includes("rate_limit") || errorCode.includes("over_email_send_rate_limit")) {
-        return { 
-          data: null, 
-          error: {
-            message: "⏳ Demasiados intentos. Espera 15-30 minutos.",
-            status: "rate_limit_error",
-            ...error
-          }
+            ...error,
+          },
         };
       }
 
-      if (errorCode === "user_already_exists" || errorMessage.includes("User already registered")) {
+      if (
+        errorCode.includes("rate_limit") ||
+        errorCode.includes("over_email_send_rate_limit")
+      ) {
+        return {
+          data: null,
+          error: {
+            message: "⏳ Demasiados intentos. Espera 15-30 minutos.",
+            status: "rate_limit_error",
+            ...error,
+          },
+        };
+      }
+
+      if (
+        errorCode === "user_already_exists" ||
+        errorMessage.includes("User already registered")
+      ) {
         return {
           data: null,
           error: {
@@ -89,23 +102,23 @@ export const authService = {
           },
         };
       }
-      
-      const isNetworkError = 
-        errorMessage.includes("Network") || 
+
+      const isNetworkError =
+        errorMessage.includes("Network") ||
         errorMessage.includes("network") ||
         errorMessage.includes("Failed to fetch");
-      
+
       if (isNetworkError) {
-        return { 
-          data: null, 
+        return {
+          data: null,
           error: {
             message: "Error de conexión.",
             status: "network_error",
-            ...error
-          }
+            ...error,
+          },
         };
       }
-      
+
       return { data: null, error };
     }
   },
@@ -121,22 +134,22 @@ export const authService = {
       return { data, error: null };
     } catch (error: any) {
       const errorMessage = error?.message || "Error desconocido";
-      const isNetworkError = 
-        errorMessage.includes("Network") || 
+      const isNetworkError =
+        errorMessage.includes("Network") ||
         errorMessage.includes("network") ||
         errorMessage.includes("Failed to fetch");
-      
+
       if (isNetworkError) {
-        return { 
-          data: null, 
+        return {
+          data: null,
           error: {
             message: "Error de conexión.",
             status: "network_error",
-            ...error
-          }
+            ...error,
+          },
         };
       }
-      
+
       return { data: null, error };
     }
   },
@@ -153,7 +166,10 @@ export const authService = {
 
   async getCurrentUser() {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
       if (error) throw error;
       return { user, error: null };
     } catch (error) {
@@ -170,29 +186,34 @@ export const authService = {
         .single();
 
       if (error && error.code !== "PGRST116") throw error;
-      
+
       // Si el perfil existe pero no tiene user_type, actualizarlo desde metadata
       if (data && !(data as any).user_type) {
         const { data: authData } = await supabase.auth.getUser();
         const user = authData?.user;
         const metadataUserType = user?.user_metadata?.user_type;
-        
+
         if (metadataUserType) {
           // Actualizar el perfil con el user_type de metadata
           const { error: updateError } = await (supabase as any)
             .from("profiles")
             .update({ user_type: metadataUserType })
             .eq("id", userId);
-          
+
           if (!updateError) {
-            console.log("✅ Profile user_type actualizado desde metadata:", metadataUserType);
+            console.log(
+              "✅ Profile user_type actualizado desde metadata:",
+              metadataUserType,
+            );
             // Crear un nuevo objeto en lugar de usar spread
-            const updatedData = Object.assign({}, data, { user_type: metadataUserType });
+            const updatedData = Object.assign({}, data, {
+              user_type: metadataUserType,
+            });
             return { data: updatedData, error: null };
           }
         }
       }
-      
+
       if (!data) {
         const { data: authData } = await supabase.auth.getUser();
         const user = authData?.user;
@@ -210,11 +231,11 @@ export const authService = {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
-          
+
           const { error: insertError } = await (supabase as any)
             .from("profiles")
             .insert([defaultProfile]);
-          
+
           if (!insertError) {
             console.log("✅ Perfil creado con user_type:", userType);
             return { data: defaultProfile, error: null };
@@ -222,7 +243,7 @@ export const authService = {
         }
         return { data: null, error: "No profile found" };
       }
-      
+
       return { data, error: null };
     } catch (error) {
       console.error("Error en getProfile:", error);

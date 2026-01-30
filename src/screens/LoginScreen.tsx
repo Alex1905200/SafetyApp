@@ -51,11 +51,15 @@ export default function LoginScreen() {
 
       if (error) {
         console.error("Error de login:", error);
-        
+
         const errorMessage = (error as any)?.message || "";
-        
+
         // Verificar si es error de red
-        if (errorMessage.includes("Network") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch")) {
+        if (
+          errorMessage.includes("Network") ||
+          errorMessage.includes("network") ||
+          errorMessage.includes("Failed to fetch")
+        ) {
           Alert.alert(
             "Error de Conexión",
             "No se puede conectar con el servidor de Supabase. Por favor:\n\n1. Verifica tu conexión a internet\n2. Comprueba que las variables de entorno estén configuradas\n3. Verifica la URL y clave de Supabase en .env\n\nSi necesitas ayuda, consulta .env.example",

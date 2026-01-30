@@ -51,22 +51,16 @@ export default function AlertsScreen() {
   const [filter, setFilter] = useState<AlertType | "all">("all");
 
   const filteredAlerts =
-    filter === "all"
-      ? alerts
-      : alerts.filter((a) => a.type === filter);
+    filter === "all" ? alerts : alerts.filter((a) => a.type === filter);
 
   const markAsInactive = (id: string) => {
     setAlerts((prev) =>
-      prev.map((a) =>
-        a.id === id ? { ...a, is_active: false } : a
-      )
+      prev.map((a) => (a.id === id ? { ...a, is_active: false } : a)),
     );
   };
 
   const timeAgo = (date: string) => {
-    const diff = Math.floor(
-      (Date.now() - new Date(date).getTime()) / 60000
-    );
+    const diff = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
     return diff < 60 ? `Hace ${diff} min` : `Hace ${Math.floor(diff / 60)} h`;
   };
 
@@ -79,10 +73,7 @@ export default function AlertsScreen() {
         {["all", "urgente", "seguridad", "informativa"].map((f) => (
           <TouchableOpacity
             key={f}
-            style={[
-              styles.filterButton,
-              filter === f && styles.filterActive,
-            ]}
+            style={[styles.filterButton, filter === f && styles.filterActive]}
             onPress={() => setFilter(f as any)}
           >
             <Text style={styles.filterText}>{f}</Text>
@@ -95,10 +86,7 @@ export default function AlertsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[
-              styles.card,
-              item.is_active ? styles.unread : styles.read,
-            ]}
+            style={[styles.card, item.is_active ? styles.unread : styles.read]}
             onPress={() => markAsInactive(item.id)}
           >
             <Text style={styles.cardTitle}>{item.title}</Text>

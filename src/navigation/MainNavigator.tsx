@@ -58,7 +58,11 @@ function MainTabsNavigator() {
         options={{
           tabBarLabel: "Historial",
           tabBarIcon: ({ size }) => (
-            <MaterialCommunityIcons name="history" size={size} color="#FFFFFF" />
+            <MaterialCommunityIcons
+              name="history"
+              size={size}
+              color="#FFFFFF"
+            />
           ),
         }}
       />

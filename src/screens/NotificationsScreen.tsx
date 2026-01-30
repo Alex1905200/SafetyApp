@@ -10,12 +10,12 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "../styles/colors";
 
-type NotificationType = 
-  | "alert_urgent" 
-  | "alert_security" 
-  | "alert_info" 
-  | "link_request" 
-  | "link_accepted" 
+type NotificationType =
+  | "alert_urgent"
+  | "alert_security"
+  | "alert_info"
+  | "link_request"
+  | "link_accepted"
   | "unlink_request";
 
 interface Notification {
@@ -56,7 +56,8 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 ];
 
 export default function NotificationsScreen() {
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] =
+    useState<Notification[]>(MOCK_NOTIFICATIONS);
   const [refreshing, setRefreshing] = useState(false);
 
   const getNotificationIcon = (type: NotificationType): string => {
@@ -97,7 +98,9 @@ export default function NotificationsScreen() {
   };
 
   const timeAgo = (dateString: string): string => {
-    const diff = Math.floor((Date.now() - new Date(dateString).getTime()) / 60000);
+    const diff = Math.floor(
+      (Date.now() - new Date(dateString).getTime()) / 60000,
+    );
     if (diff < 1) return "Ahora";
     if (diff < 60) return `Hace ${diff} min`;
     if (diff < 1440) return `Hace ${Math.floor(diff / 60)} h`;
@@ -106,7 +109,7 @@ export default function NotificationsScreen() {
 
   const markAsRead = (id: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
     );
   };
 
@@ -119,10 +122,7 @@ export default function NotificationsScreen() {
 
   const renderNotification = ({ item }: { item: Notification }) => (
     <TouchableOpacity
-      style={[
-        styles.notificationCard,
-        !item.is_read && styles.unreadCard,
-      ]}
+      style={[styles.notificationCard, !item.is_read && styles.unreadCard]}
       onPress={() => markAsRead(item.id)}
     >
       <View
