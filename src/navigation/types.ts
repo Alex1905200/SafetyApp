@@ -7,18 +7,36 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
-// Bottom Tabs principal
+// Bottom Tabs principal (Padres) - Sin Alerts, solo Notificaciones
 export type MainTabParamList = {
   Home: undefined;
   History: undefined;
-  Alerts: undefined;
+  Notifications: undefined;
   Settings: undefined;
+};
+
+// Bottom Tabs para menores (sin Notifications)
+export type ChildTabParamList = {
+  Home: undefined;
+  History: undefined;
+  Settings: undefined;
+};
+
+// Stack para navegación de padres
+type MainStackParamList = {
+  MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
+};
+
+// Stack para navegación de menores
+export type ChildMainStackParamList = {
+  ChildMainTabs: NavigatorScreenParams<ChildTabParamList> | undefined;
 };
 
 // Root Navigator
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
-  Main: NavigatorScreenParams<MainTabParamList>;
+  Main: NavigatorScreenParams<MainStackParamList>;
+  ChildMain: NavigatorScreenParams<ChildMainStackParamList>;
 };
 
 declare global {

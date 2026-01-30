@@ -85,8 +85,6 @@ export default function RegisterScreen() {
       );
 
       if (error) {
-        console.error("Error de registro:", error);
-        
         const errorMessage = (error as any)?.message || "";
         const errorStatus = (error as any)?.status || "";
         const errorCode = (error as any)?.code || "";
@@ -111,9 +109,17 @@ export default function RegisterScreen() {
             "Error de Conexión",
             "No se puede conectar con el servidor de Supabase. Por favor:\n\n1. Verifica tu conexión a internet\n2. Comprueba que las variables de entorno estén configuradas\n3. Verifica la URL y clave de Supabase en .env\n\nSi necesitas ayuda, consulta .env.example",
           );
-        } else if (errorMessage.includes("already registered")) {
-          Alert.alert("Error", "Este correo ya está registrado. Intenta con otro.");
+        } else if (errorStatus === "user_already_exists" || errorCode === "user_already_exists" || errorMessage.includes("already registered")) {
+          Alert.alert(
+            "Correo ya registrado",
+            "Este correo ya está registrado. Inicia sesión o usa otro correo.",
+            [
+              { text: "Usar otro", style: "cancel" },
+              { text: "Iniciar sesión", onPress: () => navigation.navigate("Login") },
+            ],
+          );
         } else {
+          console.error("Error de registro:", error);
           Alert.alert("Error", "No se pudo crear la cuenta. Intenta de nuevo.");
         }
         return;
@@ -144,7 +150,7 @@ export default function RegisterScreen() {
           <View style={styles.content}>
             <View style={styles.logoContainer}>
               <Image
-                source={require("../../assets/Logo.png")}
+                source={require("../../assets/logo.png")}
                 style={styles.logoImage}
                 resizeMode="contain"
               />
@@ -199,7 +205,7 @@ export default function RegisterScreen() {
         <View style={styles.content}>
           <View style={styles.logoContainer}>
             <Image
-              source={require("../../assets/Logo.png")}
+              source={require("../../assets/logo.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />

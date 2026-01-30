@@ -21,8 +21,8 @@ export const registerScreenStyles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   logoImage: {
-    width: 130,
-    height: 130,
+    width: 180,
+    height: 180,
     marginBottom: spacing.lg,
   },
   logoHeart: {

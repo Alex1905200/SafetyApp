@@ -1,4 +1,5 @@
 import { supabase } from "../config/supabase";
+import { Tables } from "../types/database.types";
 
 export const authService = {
   async signUp(
@@ -26,7 +27,6 @@ export const authService = {
         throw authError;
       }
 
-      // Crear perfil con user_type
       if (authData.user) {
         const { error: profileError } = await (supabase as any).from("profiles").insert({
           id: authData.user.id,
@@ -36,11 +36,9 @@ export const authService = {
         });
 
         if (profileError && profileError.code !== "23505") {
-          // 23505 = duplicate key, el trigger SQL ya lo creó
           throw profileError;
         }
 
-        // Si es padre y proporciona datos del menor, crear registro en tabla children
         if (userType === "parent" && childName && childAge) {
           const { error: childError } = await (supabase as any).from("children").insert({
             parent_id: authData.user.id,
@@ -59,51 +57,55 @@ export const authService = {
       const errorMessage = error?.message || "Error desconocido";
       const errorCode = error?.code || "";
       
-      // Verificar si falta la tabla en la base de datos
       if (errorCode === "PGRST205" || errorMessage.includes("Could not find the table")) {
-        console.error("Error: Tabla no encontrada en Supabase:", error);
         return { 
           data: null, 
           error: {
-            message: "❌ Las tablas de la base de datos no están creadas. Por favor:\n\n1. Abre Supabase Dashboard\n2. Ve a SQL Editor\n3. Copia y ejecuta el contenido de DATABASE_SETUP.sql\n4. Luego intenta registrarte de nuevo",
+            message: "❌ Las tablas de la base de datos no están creadas.",
             status: "database_error",
             ...error
           }
         };
       }
       
-      // Verificar si es un error de rate limit
       if (errorCode.includes("rate_limit") || errorCode.includes("over_email_send_rate_limit")) {
-        console.error("Error de límite de tasa en signUp:", error);
         return { 
           data: null, 
           error: {
-            message: "⏳ Demasiados intentos de registro. Por favor, espera 15-30 minutos e intenta de nuevo.",
+            message: "⏳ Demasiados intentos. Espera 15-30 minutos.",
             status: "rate_limit_error",
             ...error
           }
+        };
+      }
+
+      if (errorCode === "user_already_exists" || errorMessage.includes("User already registered")) {
+        return {
+          data: null,
+          error: {
+            message: "Este correo ya está registrado.",
+            status: "user_already_exists",
+            ...error,
+          },
         };
       }
       
       const isNetworkError = 
         errorMessage.includes("Network") || 
         errorMessage.includes("network") ||
-        errorMessage.includes("Failed to fetch") ||
-        !navigator.onLine;
+        errorMessage.includes("Failed to fetch");
       
       if (isNetworkError) {
-        console.error("Error de red en signUp:", error);
         return { 
           data: null, 
           error: {
-            message: "Error de conexión. Verifica tu conexión a internet y que Supabase esté configurado correctamente.",
+            message: "Error de conexión.",
             status: "network_error",
             ...error
           }
         };
       }
       
-      console.error("Error en signUp:", error);
       return { data: null, error };
     }
   },
@@ -115,33 +117,26 @@ export const authService = {
         password,
       });
 
-      if (error) {
-        console.error("Error en signIn:", error);
-        throw error;
-      }
-      
+      if (error) throw error;
       return { data, error: null };
     } catch (error: any) {
       const errorMessage = error?.message || "Error desconocido";
       const isNetworkError = 
         errorMessage.includes("Network") || 
         errorMessage.includes("network") ||
-        errorMessage.includes("Failed to fetch") ||
-        !navigator.onLine;
+        errorMessage.includes("Failed to fetch");
       
       if (isNetworkError) {
-        console.error("Error de red en signIn:", error);
         return { 
           data: null, 
           error: {
-            message: "Error de conexión. Verifica tu conexión a internet y que Supabase esté configurado correctamente.",
+            message: "Error de conexión.",
             status: "network_error",
             ...error
           }
         };
       }
       
-      console.error("Error en signIn:", error);
       return { data: null, error };
     }
   },
@@ -152,21 +147,16 @@ export const authService = {
       if (error) throw error;
       return { error: null };
     } catch (error) {
-      console.error("Error en signOut:", error);
       return { error };
     }
   },
 
   async getCurrentUser() {
     try {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
       return { user, error: null };
     } catch (error) {
-      console.error("Error en getCurrentUser:", error);
       return { user: null, error };
     }
   },
@@ -177,53 +167,70 @@ export const authService = {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .limit(1);
+        .single();
 
-      if (error) throw error;
+      if (error && error.code !== "PGRST116") throw error;
       
-      // Si no hay datos, crear un perfil por defecto
-      if (!data || data.length === 0) {
-        console.warn("No profile found for user", userId);
-        // Obtener usuario actual para rellenar datos
-        const { data: { user } } = await supabase.auth.getUser();
+      // Si el perfil existe pero no tiene user_type, actualizarlo desde metadata
+      if (data && !(data as any).user_type) {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData?.user;
+        const metadataUserType = user?.user_metadata?.user_type;
         
+        if (metadataUserType) {
+          // Actualizar el perfil con el user_type de metadata
+          const { error: updateError } = await (supabase as any)
+            .from("profiles")
+            .update({ user_type: metadataUserType })
+            .eq("id", userId);
+          
+          if (!updateError) {
+            console.log("✅ Profile user_type actualizado desde metadata:", metadataUserType);
+            // Crear un nuevo objeto en lugar de usar spread
+            const updatedData = Object.assign({}, data, { user_type: metadataUserType });
+            return { data: updatedData, error: null };
+          }
+        }
+      }
+      
+      if (!data) {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData?.user;
         if (user) {
+          const userType = user.user_metadata?.user_type || "child";
           const defaultProfile = {
             id: userId,
             email: user.email,
             first_name: user.user_metadata?.name || "Usuario",
-            user_type: user.user_metadata?.user_type || "child",
+            user_type: userType,
             age: null,
-            phone: null,
+            phone_number: null,
             address: null,
+            photo_url: null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
           
-          // Intentar crear el perfil
           const { error: insertError } = await (supabase as any)
             .from("profiles")
             .insert([defaultProfile]);
           
           if (!insertError) {
+            console.log("✅ Perfil creado con user_type:", userType);
             return { data: defaultProfile, error: null };
           }
         }
-        
         return { data: null, error: "No profile found" };
       }
       
-      return { data: data[0], error: null };
+      return { data, error: null };
     } catch (error) {
       console.error("Error en getProfile:", error);
       return { data: null, error };
     }
   },
 
-  async updateProfile(
-    userId: string,
-    updates: { name?: string; phone_number?: string; photo_url?: string },
-  ) {
+  async updateProfile(userId: string, updates: Record<string, any>) {
     try {
       const { data, error } = await (supabase as any)
         .from("profiles")
@@ -235,7 +242,6 @@ export const authService = {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error("Error en updateProfile:", error);
       return { data: null, error };
     }
   },
@@ -248,9 +254,8 @@ export const authService = {
         .eq("parent_id", parentId);
 
       if (error) throw error;
-      return { data, error: null };
+      return { data: data as Tables<"children">[] | null, error: null };
     } catch (error) {
-      console.error("Error en getChildren:", error);
       return { data: null, error };
     }
   },
@@ -260,12 +265,12 @@ export const authService = {
       const { data, error } = await (supabase as any)
         .from("children")
         .insert({ parent_id: parentId, name, age })
-        .select();
+        .select()
+        .single();
 
       if (error) throw error;
-      return { data: data && data.length > 0 ? data[0] : null, error: null };
+      return { data: data as Tables<"children"> | null, error: null };
     } catch (error) {
-      console.error("Error en addChild:", error);
       return { data: null, error };
     }
   },

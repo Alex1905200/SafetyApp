@@ -18,12 +18,12 @@ export const getAlerts = async (
 };
 
 /**
- * Marcar alerta como leída
+ * Resolver alerta (marcar como inactiva)
  */
-export const markAlertAsRead = async (id: string): Promise<void> => {
+export const resolveAlert = async (id: string): Promise<void> => {
   const { error } = await (supabase as any)
     .from("alerts")
-    .update({ is_read: true })
+    .update({ is_active: false, resolved_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;

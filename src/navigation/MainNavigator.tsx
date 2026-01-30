@@ -5,13 +5,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import HomeMapScreen from "../screens/HomeMapScreen";
 import HistoryScreen from "../screens/HistoryScreen";
-import AlertsScreen from "../screens/AlertsScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { colors } from "../styles/colors";
 
 import { MainTabParamList } from "./types";
 
-// 👉 Stack tipado correctamente
 type MainStackParamList = {
   MainTabs: undefined;
 };
@@ -65,10 +64,10 @@ function MainTabsNavigator() {
       />
 
       <Tab.Screen
-        name="Alerts"
-        component={AlertsScreen}
+        name="Notifications"
+        component={NotificationsScreen}
         options={{
-          tabBarLabel: "Alertas",
+          tabBarLabel: "Notificaciones",
           tabBarIcon: ({ size }) => (
             <MaterialCommunityIcons name="bell" size={size} color="#FFFFFF" />
           ),

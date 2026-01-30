@@ -8,14 +8,10 @@ import HistoryScreen from "../screens/HistoryScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { colors } from "../styles/colors";
 
-import { MainTabParamList } from "./types";
+import { ChildMainStackParamList, ChildTabParamList } from "./types";
 
-type MainStackParamList = {
-  ChildMainTabs: undefined;
-};
-
-const Stack = createNativeStackNavigator<MainStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Stack = createNativeStackNavigator<ChildMainStackParamList>();
+const Tab = createBottomTabNavigator<ChildTabParamList>();
 
 function ChildMainTabsNavigator() {
   return (

@@ -16,7 +16,7 @@ type Alert = {
   message: string;
   type: AlertType;
   created_at: string;
-  is_read: boolean;
+  is_active: boolean;
 };
 
 const MOCK_ALERTS: Alert[] = [
@@ -26,7 +26,7 @@ const MOCK_ALERTS: Alert[] = [
     message: "Entró a una zona peligrosa",
     type: "urgente",
     created_at: new Date(Date.now() - 5 * 60000).toISOString(),
-    is_read: false,
+    is_active: true,
   },
   {
     id: "2",
@@ -34,7 +34,7 @@ const MOCK_ALERTS: Alert[] = [
     message: "Se desvió de la ruta habitual",
     type: "seguridad",
     created_at: new Date(Date.now() - 20 * 60000).toISOString(),
-    is_read: false,
+    is_active: true,
   },
   {
     id: "3",
@@ -42,7 +42,7 @@ const MOCK_ALERTS: Alert[] = [
     message: "Llegó a la escuela",
     type: "informativa",
     created_at: new Date(Date.now() - 60 * 60000).toISOString(),
-    is_read: true,
+    is_active: false,
   },
 ];
 
@@ -55,10 +55,10 @@ export default function AlertsScreen() {
       ? alerts
       : alerts.filter((a) => a.type === filter);
 
-  const markAsRead = (id: string) => {
+  const markAsInactive = (id: string) => {
     setAlerts((prev) =>
       prev.map((a) =>
-        a.id === id ? { ...a, is_read: true } : a
+        a.id === id ? { ...a, is_active: false } : a
       )
     );
   };
@@ -97,14 +97,14 @@ export default function AlertsScreen() {
           <TouchableOpacity
             style={[
               styles.card,
-              item.is_read ? styles.read : styles.unread,
+              item.is_active ? styles.unread : styles.read,
             ]}
-            onPress={() => markAsRead(item.id)}
+            onPress={() => markAsInactive(item.id)}
           >
             <Text style={styles.cardTitle}>{item.title}</Text>
             <Text>{item.message}</Text>
             <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
-            {!item.is_read && (
+            {item.is_active && (
               <Text style={styles.mark}>✔ Marcar como revisada</Text>
             )}
           </TouchableOpacity>

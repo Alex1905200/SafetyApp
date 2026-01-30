@@ -13,24 +13,23 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [userType, setUserType] = useState<"parent" | "child" | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Chequear sesión actual inmediatamente
     checkCurrentSession();
 
-    // Usar el listener de autenticación de Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email);
-        setIsLoggedIn(!!session);
-        
+        console.log("🔄 Auth state changed:", event);
+
         if (session?.user) {
-          // Obtener tipo de usuario
-          const { data: profile } = await authService.getProfile(session.user.id);
-          setUserType(profile?.user_type || "child");
+          setIsLoggedIn(true);
+          await loadUserType(session.user.id);
         } else {
+          setIsLoggedIn(false);
           setUserType(null);
         }
+        setIsLoading(false);
       },
     );
 
@@ -39,61 +38,67 @@ export function RootNavigator() {
     };
   }, []);
 
+  const loadUserType = async (userId: string) => {
+    try {
+      const { data: profile } = await authService.getProfile(userId);
+      const profileData = profile as any;
+
+      console.log("👤 Profile data:", profileData);
+      console.log("👤 User type from profile:", profileData?.user_type);
+
+      // Verificar también en user_metadata si no está en profile
+      const { data: { user } } = await supabase.auth.getUser();
+      const metadataUserType = user?.user_metadata?.user_type;
+
+      console.log("👤 User type from metadata:", metadataUserType);
+
+      const finalUserType = profileData?.user_type || metadataUserType || "child";
+      console.log("✅ Final user type:", finalUserType);
+
+      setUserType(finalUserType);
+    } catch (error) {
+      console.error("Error loading user type:", error);
+      setUserType("child");
+    }
+  };
+
   const checkCurrentSession = async () => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      console.log("Current session:", session?.user?.email);
-      setIsLoggedIn(!!session);
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
-        const { data: profile } = await authService.getProfile(session.user.id);
-        setUserType(profile?.user_type || "child");
+        console.log("📱 Current session found:", session.user.email);
+        setIsLoggedIn(true);
+        await loadUserType(session.user.id);
+      } else {
+        console.log("📱 No session found");
+        setIsLoggedIn(false);
+        setUserType(null);
       }
     } catch (error) {
       console.error("Error checking session:", error);
       setIsLoggedIn(false);
       setUserType(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Mientras carga, no mostrar nada
-  if (isLoggedIn === null || (isLoggedIn && userType === null)) {
+  console.log("🧭 Navigation state:", { isLoggedIn, userType, isLoading });
+
+  if (isLoading || isLoggedIn === null) {
     return null;
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isLoggedIn ? (
-          <Stack.Screen
-            name="Auth"
-            component={AuthNavigator}
-            options={{
-              animationTypeForReplace: isLoggedIn === false ? "pop" : "pop",
-            }}
-          />
+          <Stack.Screen name="Auth" component={AuthNavigator} />
         ) : userType === "parent" ? (
-          <Stack.Screen
-            name="Main"
-            component={MainNavigator}
-            options={{
-              animationTypeForReplace: isLoggedIn === true ? "pop" : "pop",
-            }}
-          />
+          <Stack.Screen name="Main" component={MainNavigator} />
         ) : (
-          <Stack.Screen
-            name="ChildMain"
-            component={ChildMainNavigator}
-            options={{
-              animationTypeForReplace: isLoggedIn === true ? "pop" : "pop",
-            }}
-          />
+          <Stack.Screen name="ChildMain" component={ChildMainNavigator} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

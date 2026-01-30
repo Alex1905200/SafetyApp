@@ -17,8 +17,8 @@ export const loginScreenStyles = StyleSheet.create({
     marginBottom: spacing.huge,
   },
   logoImage: {
-    width: 140,
-    height: 140,
+    width: 180,
+    height: 180,
     marginBottom: spacing.lg,
   },
   logoHeart: {
